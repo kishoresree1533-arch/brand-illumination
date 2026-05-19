@@ -72,20 +72,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "RM Sign Factory — Premium Signage & LED Branding" },
+      {
+        name: "description",
+        content:
+          "RM Sign Factory designs and manufactures premium LED sign boards, acrylic signs, neon signage, 3D letters and large-format outdoor branding.",
+      },
+      { property: "og:title", content: "RM Sign Factory — Premium Signage & LED Branding" },
+      { property: "og:description", content: "Premium signage manufacturing studio. LED, acrylic, neon, 3D letters and outdoor branding." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap",
       },
+      { rel: "stylesheet", href: appCss },
     ],
   }),
   shellComponent: RootShell,
