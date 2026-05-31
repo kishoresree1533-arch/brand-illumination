@@ -4,13 +4,11 @@ import { useLocation } from "@tanstack/react-router";
 import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 import { SpotlightCursor } from "./SpotlightCursor";
-import { LoadingScreen } from "./LoadingScreen";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   return (
     <>
-      <LoadingScreen />
       <SpotlightCursor />
       <SiteHeader />
       <motion.main

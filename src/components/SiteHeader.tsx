@@ -1,21 +1,64 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { Menu, X, ArrowUpRight, ChevronDown, Layers, Lightbulb, Building2, Printer } from "lucide-react";
 import { Logo } from "./Logo";
 
-const NAV = [
-  { to: "/", label: "Home" },
-  { to: "/about", label: "About" },
-  { to: "/products", label: "Products" },
-  { to: "/portfolio", label: "Portfolio" },
-  { to: "/contact", label: "Contact" },
+// ── Mega-menu product columns ─────────────────────────────────────────────────
+const PRODUCT_COLS = [
+  {
+    cat: "CNC & LASER CUTTING",
+    icon: Layers,
+    items: [
+      { label: "ACP Router Cutting",            id: "acp-router-cutting" },
+      { label: "MDF CNC Laser Cutting",          id: "mdf-cnc-cutting" },
+      { label: "Acrylic Laser Cutting & E...",   id: "acrylic-laser-cutting" },
+      { label: "CNC Aluminium Routing",          id: "cnc-aluminium-cutting" },
+      { label: "Vacuum Foaming Signage",         id: "vacuum-foaming" },
+    ],
+  },
+  {
+    cat: "LED & ILLUMINATION",
+    icon: Lightbulb,
+    items: [
+      { label: "LED Acrylic Glow Signage", id: "led-acrylic-signage" },
+      { label: "LED Outdoor Glow Signs",   id: "led-outdoor-glow" },
+      { label: "LED Pylon Sign",           id: "led-pylon-sign" },
+      { label: "LED Acrylic Neon Sign",    id: "led-acrylic-neon" },
+      { label: "Glass Neon Signage",       id: "neon-sign" },
+      { label: "LED Digital Display",      id: "digital-display" },
+    ],
+  },
+  {
+    cat: "CORPORATE BRANDING",
+    icon: Building2,
+    items: [
+      { label: "Brass Letter Signage",     id: "brass-letter-signage" },
+      { label: "Mini SS 3D Letters",       id: "mini-ss-3d-letters" },
+      { label: "Gold 3D Brushed Letters",  id: "gold-3d-brush-letters" },
+      { label: "Epoxy Fiberglass Signage", id: "epoxy-fiberglass" },
+      { label: "Premium Shop Signage",     id: "shop-signage" },
+    ],
+  },
+  {
+    cat: "PRINTING & SIGNBOARDS",
+    icon: Printer,
+    items: [
+      { label: "Eco Solvent Printing",        id: "eco-solvent-printing" },
+      { label: "Flex Banner Printing",        id: "flex-printing" },
+      { label: "Outdoor Signboard",           id: "outdoor-signboard" },
+      { label: "Traffic & Directional Signs", id: "traffic-u-sign" },
+      { label: "Wayfinding Signage Sys...",   id: "wayfinding-signage" },
+    ],
+  },
 ] as const;
 
 export function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [megaOpen, setMegaOpen]     = useState(false);
   const { pathname } = useLocation();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -24,87 +67,192 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => { setMobileOpen(false); setMegaOpen(false); }, [pathname]);
+
+  const openMega  = () => { if (timerRef.current) clearTimeout(timerRef.current); setMegaOpen(true); };
+  const closeMega = () => { timerRef.current = setTimeout(() => setMegaOpen(false), 150); };
+
+  const isProductsActive = pathname.startsWith("/products");
 
   return (
     <motion.header
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        scrolled ? "py-2" : "py-4"
-      }`}
+      transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled ? "shadow-md" : ""}`}
+      style={{ backgroundColor: "rgba(255,255,255,0.97)", backdropFilter: "blur(16px)" }}
     >
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto max-w-7xl px-6 md:px-10">
+        {/* ── Full-width navbar ── */}
         <div
-          className={`flex items-center justify-between rounded-2xl px-4 md:px-6 py-3 transition-all duration-500 ${
-            scrolled ? "glass-strong led-glow-blue" : "glass"
-          }`}
+          className="flex items-center justify-between py-4 transition-all duration-300"
         >
+          {/* Logo */}
           <Logo />
 
+          {/* ── Desktop nav ── */}
           <nav className="hidden lg:flex items-center gap-1">
-            {NAV.map((item) => {
-              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="relative px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
-                >
-                  <span className="relative z-10">{item.label}</span>
-                  {active && (
-                    <motion.span
-                      layoutId="nav-indicator"
-                      className="absolute inset-0 rounded-full bg-white/5 ring-1 ring-[var(--gold)]/40"
-                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                    />
-                  )}
-                  <span className="pointer-events-none absolute left-4 right-4 -bottom-0.5 h-px origin-left scale-x-0 bg-gradient-to-r from-[var(--gold)] to-[var(--accent)] transition-transform duration-500 group-hover:scale-x-100" />
-                </Link>
-              );
-            })}
+            {/* Home */}
+            <Link to="/" className="relative px-4 py-2 text-sm font-medium transition-colors text-[#163458] hover:text-[#163458]">
+              <span className="relative z-10">Home</span>
+              {pathname === "/" && (
+                <motion.span
+                  layoutId="nav-pill"
+                  className="absolute inset-0 rounded-full bg-[#f0f0f0]"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+              )}
+            </Link>
+
+            {/* About */}
+            <Link to="/about" className="relative px-4 py-2 text-sm font-medium text-[#163458] hover:text-[#163458] transition-colors">
+              <span className="relative z-10">About</span>
+              {pathname.startsWith("/about") && (
+                <motion.span layoutId="nav-pill" className="absolute inset-0 rounded-full bg-[#f0f0f0]" transition={{ type: "spring", stiffness: 380, damping: 32 }} />
+              )}
+            </Link>
+
+            {/* Our Products — mega dropdown */}
+            <div className="relative" onMouseEnter={openMega} onMouseLeave={closeMega}>
+              <Link
+                to="/products"
+                className={`relative flex items-center gap-1 px-4 py-2 text-sm font-medium transition-colors text-[#163458] hover:text-[#163458]`}
+              >
+                <span className="relative z-10">Our Products</span>
+                <ChevronDown className={`h-3.5 w-3.5 relative z-10 transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`} />
+                {isProductsActive && (
+                  <motion.span layoutId="nav-pill" className="absolute inset-0 rounded-full bg-[#f0f0f0]" transition={{ type: "spring", stiffness: 380, damping: 32 }} />
+                )}
+              </Link>
+
+              {/* Mega menu */}
+              <AnimatePresence>
+                {megaOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.18 }}
+                    onMouseEnter={openMega}
+                    onMouseLeave={closeMega}
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-[800px] rounded-2xl shadow-2xl overflow-hidden border border-[#163458]/10 bg-white"
+                  >
+                    <div className="grid grid-cols-4 gap-0 p-6">
+                      {PRODUCT_COLS.map((col, ci) => (
+                        <div key={col.cat} className={ci < 3 ? "border-r border-[#163458]/10 pr-5 mr-1" : ""}>
+                          <Link to="/products" search={{ cat: col.cat }} className="flex items-center gap-2 mb-4 group">
+                            <col.icon className="h-4 w-4 text-[var(--gold)] shrink-0" />
+                            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#163458] group-hover:text-[var(--gold)] transition-colors leading-tight">
+                              {col.cat}
+                            </span>
+                          </Link>
+                          <ul className="space-y-2.5">
+                            {col.items.map((item) => (
+                              <li key={item.id}>
+                                <Link
+                                  to="/products/$productId"
+                                  params={{ productId: item.id }}
+                                  className="text-[13px] text-[#163458]/70 hover:text-[#163458] hover:translate-x-1 duration-200 transition-all leading-snug block truncate"
+                                >
+                                  {item.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="border-t border-[#163458]/10 px-6 py-3 flex items-center justify-between bg-[#163458]/[0.02]">
+                      <span className="text-[11px] text-[#163458]/40 uppercase tracking-widest">Luxury Signage Fabrications</span>
+                      <Link to="/products" className="text-[11px] font-bold text-[#163458] hover:text-[var(--gold)] transition-colors uppercase tracking-wider">
+                        View All Products →
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Portfolio */}
+            <Link to="/portfolio" className="relative px-4 py-2 text-sm font-medium text-[#163458] hover:text-[#163458] transition-colors">
+              <span className="relative z-10">Portfolio</span>
+              {pathname.startsWith("/portfolio") && (
+                <motion.span layoutId="nav-pill" className="absolute inset-0 rounded-full bg-[#f0f0f0]" transition={{ type: "spring", stiffness: 380, damping: 32 }} />
+              )}
+            </Link>
+
+            {/* Contact */}
+            <Link to="/contact" className="relative px-4 py-2 text-sm font-medium text-[#163458] hover:text-[#163458] transition-colors">
+              <span className="relative z-10">Contact</span>
+              {pathname.startsWith("/contact") && (
+                <motion.span layoutId="nav-pill" className="absolute inset-0 rounded-full bg-[#f0f0f0]" transition={{ type: "spring", stiffness: 380, damping: 32 }} />
+              )}
+            </Link>
           </nav>
 
+          {/* CTA button */}
           <div className="hidden md:block">
             <Link
               to="/contact"
-              className="magnetic-btn group inline-flex items-center gap-2 rounded-full bg-[var(--gold)] px-5 py-2.5 text-sm font-semibold text-[var(--navy)] led-glow-gold"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--gold)] px-5 py-2.5 text-sm font-semibold text-[#163458] hover:brightness-105 transition-all"
             >
               Get a Quote
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
 
+          {/* Mobile hamburger */}
           <button
-            onClick={() => setOpen((v) => !v)}
-            className="lg:hidden grid h-10 w-10 place-items-center rounded-full glass"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="lg:hidden grid h-10 w-10 place-items-center rounded-full border border-[#163458]/20 text-[#163458]"
             aria-label="Menu"
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
+        {/* ── Mobile menu ── */}
         <AnimatePresence>
-          {open && (
+          {mobileOpen && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="lg:hidden mt-2 glass-strong rounded-2xl p-3"
+              className="lg:hidden mt-0 p-3 max-h-[80vh] overflow-y-auto shadow-xl border-t border-[#163458]/10"
+              style={{ backgroundColor: "rgba(255,255,255,0.97)" }}
             >
-              {NAV.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="block rounded-xl px-4 py-3 text-white/85 hover:bg-white/5"
-                >
-                  {item.label}
+              <Link to="/"          className="block rounded-xl px-4 py-3 text-sm font-medium text-[#163458] hover:bg-[#f0f0f0]">Home</Link>
+              <Link to="/about"     className="block rounded-xl px-4 py-3 text-sm font-medium text-[#163458] hover:bg-[#f0f0f0]">About</Link>
+
+              {/* Products accordion */}
+              <div>
+                <Link to="/products" className="block rounded-xl px-4 py-3 text-sm font-semibold text-[#163458] hover:bg-[#f0f0f0]">
+                  Our Products
                 </Link>
-              ))}
+                <div className="ml-4 mt-1 space-y-1">
+                  {PRODUCT_COLS.map((col) => (
+                    <div key={col.cat}>
+                      <p className="px-4 py-1 text-[10px] uppercase tracking-widest text-[var(--gold)] font-bold">{col.cat}</p>
+                      {col.items.map((item) => (
+                        <Link
+                          key={item.id}
+                          to="/products/$productId"
+                          params={{ productId: item.id }}
+                          className="block rounded-lg px-4 py-2 text-sm text-[#163458]/70 hover:text-[#163458] hover:bg-[#f0f0f0]"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Link to="/portfolio" className="block rounded-xl px-4 py-3 text-sm font-medium text-[#163458] hover:bg-[#f0f0f0]">Portfolio</Link>
+              <Link to="/contact"   className="block rounded-xl px-4 py-3 text-sm font-medium text-[#163458] hover:bg-[#f0f0f0]">Contact</Link>
               <Link
                 to="/contact"
-                className="mt-2 block rounded-xl bg-[var(--gold)] px-4 py-3 text-center font-semibold text-[var(--navy)]"
+                className="mt-2 block rounded-xl bg-[var(--gold)] px-4 py-3 text-center text-sm font-semibold text-[#163458]"
               >
                 Get a Quote
               </Link>

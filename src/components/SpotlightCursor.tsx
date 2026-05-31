@@ -26,7 +26,7 @@ export function SpotlightCursor() {
         className="h-[480px] w-[480px] rounded-full"
         style={{
           background:
-            "radial-gradient(closest-side, oklch(0.82 0.16 88 / 0.10), oklch(0.55 0.24 264 / 0.06) 50%, transparent 70%)",
+            "radial-gradient(closest-side, oklch(0.82 0.16 88 / 0.08), oklch(0.82 0.16 88 / 0.03) 50%, transparent 70%)",
           filter: "blur(10px)",
           mixBlendMode: "screen",
         }}

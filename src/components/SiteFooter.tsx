@@ -1,91 +1,136 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Youtube } from "lucide-react";
-import { Logo } from "./Logo";
+import rmLogo from "@/assets/rm logo png.png";
 
-const cols = [
-  {
-    title: "Company",
-    links: [
-      { label: "About", to: "/about" },
-      { label: "Portfolio", to: "/portfolio" },
-      { label: "Contact", to: "/contact" },
-    ],
-  },
-  {
-    title: "Services",
-    links: [
-      { label: "LED Sign Boards", to: "/products" },
-      { label: "Acrylic Signs", to: "/products" },
-      { label: "Neon Signs", to: "/products" },
-      { label: "3D Letter Signage", to: "/products" },
-    ],
-  },
+const COMPANY_LINKS = [
+  { label: "About",     to: "/about" },
+  { label: "Portfolio", to: "/portfolio" },
+  { label: "Contact",   to: "/contact" },
+];
+
+const SERVICE_LINKS = [
+  { label: "LED Sign Boards",  to: "/products" },
+  { label: "Acrylic Signs",    to: "/products" },
+  { label: "Neon Signs",       to: "/products" },
+  { label: "3D Letter Signage",to: "/products" },
+];
+
+const SOCIALS = [
+  { Icon: Instagram, label: "Instagram" },
+  { Icon: Facebook,  label: "Facebook"  },
+  { Icon: Linkedin,  label: "LinkedIn"  },
+  { Icon: Youtube,   label: "YouTube"   },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="relative mt-32 overflow-hidden border-t border-white/10">
-      <div className="pointer-events-none absolute inset-0 grid-bg opacity-30" />
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-80 w-[80%] -translate-x-1/2 rounded-full bg-[var(--royal)] opacity-30 blur-[120px]" />
+    <footer
+      className="relative mt-24 border-t border-white/10"
+      style={{ backgroundColor: "#163458" }}
+    >
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-8">
 
-      <div className="relative mx-auto max-w-7xl px-4 pt-20 pb-10">
-        <div className="grid gap-12 lg:grid-cols-12">
-          <div className="lg:col-span-5 space-y-6">
-            <Logo />
-            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+        {/* ── Main grid ─────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_auto]">
+
+          {/* Col 1 — Logo + description + contact */}
+          <div className="space-y-5 max-w-xs">
+            {/* Logo image */}
+            <Link to="/" aria-label="RM Sign Factory home">
+              <div className="inline-block rounded-xl bg-white p-2">
+                <img
+                  src={rmLogo}
+                  alt="RM Sign Factory Logo"
+                  className="h-24 w-auto object-contain"
+                />
+              </div>
+            </Link>
+
+            <p className="text-sm leading-relaxed text-white/75">
               RM Sign Factory crafts premium signage, LED branding and large-format
               outdoor displays that put your brand in the spotlight — literally.
             </p>
-            <div className="space-y-2 text-sm">
-              <a href="tel:+910000000000" className="flex items-center gap-3 text-white/80 hover:text-[var(--gold)]">
-                <Phone className="h-4 w-4 text-[var(--gold)]" /> +91 00000 00000
+
+            <div className="space-y-2.5 text-sm">
+              <a
+                href="tel:+910000000000"
+                className="flex items-center gap-3 text-white/80 hover:text-[var(--gold)] transition-colors"
+              >
+                <Phone className="h-4 w-4 shrink-0 text-[var(--gold)]" />
+                +91 00000 00000
               </a>
-              <a href="mailto:hello@rmsignfactory.com" className="flex items-center gap-3 text-white/80 hover:text-[var(--gold)]">
-                <Mail className="h-4 w-4 text-[var(--gold)]" /> hello@rmsignfactory.com
+              <a
+                href="mailto:hello@rmsignfactory.com"
+                className="flex items-center gap-3 text-white/80 hover:text-[var(--gold)] transition-colors"
+              >
+                <Mail className="h-4 w-4 shrink-0 text-[var(--gold)]" />
+                hello@rmsignfactory.com
               </a>
               <p className="flex items-center gap-3 text-white/80">
-                <MapPin className="h-4 w-4 text-[var(--gold)]" /> Manufacturing Unit · India
+                <MapPin className="h-4 w-4 shrink-0 text-[var(--gold)]" />
+                Manufacturing Unit · India
               </p>
             </div>
           </div>
 
-          {cols.map((c) => (
-            <div key={c.title} className="lg:col-span-3">
-              <h4 className="mb-5 text-xs uppercase tracking-[0.24em] text-[var(--gold)]">{c.title}</h4>
-              <ul className="space-y-3 text-sm">
-                {c.links.map((l) => (
-                  <li key={l.label}>
-                    <Link to={l.to} className="group inline-flex items-center text-white/75 hover:text-white">
-                      <span className="story-link">{l.label}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Col 2 — Company */}
+          <div>
+            <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
+              Company
+            </h4>
+            <ul className="space-y-3">
+              {COMPANY_LINKS.map((l) => (
+                <li key={l.label}>
+                  <Link
+                    to={l.to}
+                    className="text-sm text-white/80 hover:text-white transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-          <div className="lg:col-span-1 flex lg:flex-col gap-3">
-            {[Instagram, Facebook, Linkedin, Youtube].map((Icon, i) => (
+          {/* Col 3 — Services */}
+          <div>
+            <h4 className="mb-5 text-xs font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
+              Services
+            </h4>
+            <ul className="space-y-3">
+              {SERVICE_LINKS.map((l) => (
+                <li key={l.label}>
+                  <Link
+                    to={l.to}
+                    className="text-sm text-white/80 hover:text-white transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Col 4 — Social icons */}
+          <div className="flex flex-row lg:flex-col gap-3">
+            {SOCIALS.map(({ Icon, label }) => (
               <a
-                key={i}
+                key={label}
                 href="#"
-                className="grid h-10 w-10 place-items-center rounded-full glass transition-all hover:led-glow-gold"
-                aria-label="social"
+                aria-label={label}
+                className="grid h-10 w-10 place-items-center rounded-lg transition-all hover:opacity-80"
+                style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
               >
-                <Icon className="h-4 w-4 text-white/80" />
+                <Icon className="h-4 w-4 text-white" />
               </a>
             ))}
           </div>
         </div>
 
-        <div className="relative mt-16 pt-6">
-          <div className="absolute inset-x-0 top-0 h-px overflow-hidden">
-            <div className="h-full w-[200%] bg-[linear-gradient(90deg,transparent,oklch(0.82_0.16_88/0.7),transparent)] animate-marquee" />
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 text-xs text-muted-foreground sm:flex-row">
-            <p>© {new Date().getFullYear()} RM Sign Factory. All rights reserved.</p>
-            <p>Crafted with cinematic light · Manufactured in India</p>
-          </div>
+        {/* ── Bottom bar ────────────────────────────────────────────── */}
+        <div className="mt-14 border-t border-white/10 pt-6 flex flex-col items-center justify-between gap-3 text-xs text-white/40 sm:flex-row">
+          <p>© {new Date().getFullYear()} RM Sign Factory. All rights reserved.</p>
+          <p>Crafted with cinematic light · Manufactured in India</p>
         </div>
       </div>
     </footer>

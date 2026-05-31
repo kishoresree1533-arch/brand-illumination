@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Redirect /admin to admin login page (index.php)
+RewriteCond %{REQUEST_URI} ^/admin/?$
+RewriteRule ^.*$ /admin/index.php [L,R=302]
