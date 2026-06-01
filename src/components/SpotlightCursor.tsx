@@ -20,7 +20,15 @@ export function SpotlightCursor() {
     return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(raf); };
   }, []);
   return (
-    <div className="pointer-events-none fixed inset-0 z-[60] hidden md:block">
+    <div
+      className="hidden md:block"
+      style={{
+        pointerEvents: "none",
+        position: "fixed",
+        inset: 0,
+        zIndex: 60,
+      }}
+    >
       <div
         ref={ref}
         className="h-[480px] w-[480px] rounded-full"

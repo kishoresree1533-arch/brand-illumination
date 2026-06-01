@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteShell } from "@/components/SiteShell";
-import { ArrowLeft, Mail, Share2, ChevronRight, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Share2, ChevronRight, CheckCircle2, ImageOff } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { PRODUCTS, type Product } from "@/lib/products-data";
-import hero from "@/assets/hero-signage.jpg";
 
 export const Route = createFileRoute("/products/$productId")({
   head: ({ params }) => {
@@ -19,7 +18,7 @@ export const Route = createFileRoute("/products/$productId")({
   notFoundComponent: () => (
     <SiteShell>
       <div className="text-center py-32 px-4 min-h-[60vh]">
-        <h1 className="text-3xl font-bold text-white">Product Not Found</h1>
+        <h1 className="text-3xl font-bold text-[#163458]">Product Not Found</h1>
         <Link to="/products" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[var(--gold)] px-6 py-2.5 font-semibold text-[var(--navy)]">
           <ArrowLeft className="h-4 w-4" /> Back to Products
         </Link>
@@ -52,10 +51,33 @@ function getDynamicFaqs(product: Product) {
   ];
 }
 
+// Safe image component — shows a proper fallback if the image fails
+function ProductImage({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
+  const [errored, setErrored] = useState(false);
+
+  if (errored || !src) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "#f1f5f9", color: "#94a3b8", height: "100%", width: "100%", ...style }} className={className}>
+        <ImageOff style={{ width: 28, height: 28 }} />
+        <span style={{ fontSize: 11 }}>Image unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      style={{ display: "block", ...style }}
+      onError={() => setErrored(true)}
+      loading="eager"
+    />
+  );
+}
+
 function ProductDetailPage() {
   const { productId } = Route.useParams();
-
-  // Derive product directly — no async, no state, no fetch needed
   const product = useMemo(() => PRODUCTS.find(p => p.id === productId) ?? null, [productId]);
 
   const [quantity, setQuantity] = useState("50");
@@ -68,11 +90,9 @@ function ProductDetailPage() {
   const detailTextareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Reset image and scroll when navigating between products
   useEffect(() => {
     setActiveImage(null);
     setSubmitted(false);
-    window.scrollTo(0, 0);
   }, [productId]);
 
   if (!product) return (
@@ -90,247 +110,432 @@ function ProductDetailPage() {
   const faqsContent  = product.faqs  || getDynamicFaqs(product);
   const currentImg   = activeImage || product.img;
   const relatedProducts = PRODUCTS.filter(p => p.cat === product.cat && p.id !== product.id).slice(0, 2);
-  const moq = product.trade?.["Minimum Order Quantity"] || "10 Units";
+  const getMoq = (p: Product) => p.trade?.["Minimum Order Quantity"] || "10 Units";
 
-  const handleShare = () => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); };
-  const handleCallbackClick = (msg: string) => { setDetails(msg); formRef.current?.scrollIntoView({ behavior: "smooth" }); setTimeout(() => detailTextareaRef.current?.focus(), 800); };
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCallbackClick = (msg: string) => {
+    setDetails(msg);
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => detailTextareaRef.current?.focus(), 800);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mobile || mobile.trim().length < 10) { alert("Please enter a valid 10-digit mobile number."); return; }
+    if (!mobile || mobile.trim().length < 10) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
     setSubmitted(true);
     setTimeout(() => { setSubmitted(false); setMobile(""); setDetails(""); }, 4000);
   };
 
   return (
     <SiteShell>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-white">
 
-        {/* Breadcrumb */}
-        <div className="border-b border-[#163458]/10 py-3 bg-foreground/[0.04]">
-          <div className="mx-auto max-w-7xl px-4">
-            <div className="flex flex-wrap items-center gap-1.5 text-xs md:text-sm text-[#163458]/60 font-medium">
-              <Link to="/" className="text-[#163458]/70 hover:text-[var(--gold)] transition-colors">Home</Link>
-              <ChevronRight className="h-3 w-3" />
-              <Link to="/about" className="text-[#163458]/70 hover:text-[var(--gold)] transition-colors">Company Profile</Link>
-              <ChevronRight className="h-3 w-3" />
-              <Link to="/products" className="text-[#163458]/70 hover:text-[var(--gold)] transition-colors">Our Products</Link>
-              <ChevronRight className="h-3 w-3" />
-              <Link to="/products" search={{ cat: product.cat }} className="text-[#163458]/70 hover:text-[var(--gold)] transition-colors">{product.cat}</Link>
-              <ChevronRight className="h-3 w-3" />
-              <span className="text-[#163458]/95 font-bold truncate max-w-[200px] md:max-w-none">{product.title}</span>
+        {/* ── Breadcrumb / Back bar ── */}
+        <div style={{ borderBottom: "1px solid rgba(22,52,88,0.10)", backgroundColor: "rgba(22,52,88,0.02)" }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto", padding: "12px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: 13, color: "rgba(22,52,88,0.6)", fontWeight: 500 }}>
+              {/* Back button */}
+              <Link
+                to="/products"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  padding: "4px 10px", borderRadius: 20,
+                  border: "1px solid rgba(22,52,88,0.2)",
+                  background: "white", color: "#163458",
+                  fontSize: 12, fontWeight: 600, textDecoration: "none",
+                  marginRight: 8, transition: "all 0.15s"
+                }}
+              >
+                <ArrowLeft style={{ width: 12, height: 12 }} />
+                Back
+              </Link>
+              <Link to="/" style={{ color: "rgba(22,52,88,0.7)" }}>Home</Link>
+              <ChevronRight style={{ width: 12, height: 12 }} />
+              <Link to="/products" style={{ color: "rgba(22,52,88,0.7)" }}>Our Products</Link>
+              <ChevronRight style={{ width: 12, height: 12 }} />
+              <Link to="/products" search={{ cat: product.cat }} style={{ color: "rgba(22,52,88,0.7)" }}>{product.cat}</Link>
+              <ChevronRight style={{ width: 12, height: 12 }} />
+              <span style={{ color: "#163458", fontWeight: 700 }}>{product.title}</span>
             </div>
           </div>
         </div>
 
-        {/* Main layout */}
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
+        {/* ── Main content ── */}
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 16px" }}>
 
-            {/* Left: image + buttons */}
-            <div className="w-full lg:w-[40%] flex flex-col gap-4">
-              <div className="border border-[#163458]/10 rounded-xl p-1 bg-slate-50 relative">
-                <div className="aspect-[4/3] flex items-center justify-center bg-black/20 relative overflow-hidden rounded-lg">
-                  <img src={currentImg} alt={product.title} className="w-full h-full object-contain" />
-                  <button onClick={handleShare}
-                    className="absolute top-2 right-2 p-2 rounded-full bg-black/60 border border-white/10 text-[var(--gold)] hover:bg-black/80 transition-colors"
+          {/* Top section: image + specs */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "flex-start" }}>
+
+            {/* Left: image */}
+            <div style={{ flex: "0 0 auto", width: "min(100%, 420px)" }}>
+
+              {/* Main image box */}
+              <div style={{
+                border: "1px solid rgba(22,52,88,0.12)",
+                borderRadius: 16,
+                padding: 8,
+                background: "#f8f9fb",
+                position: "relative"
+              }}>
+                {/* Image container — fixed height, white background */}
+                <div style={{
+                  width: "100%",
+                  height: 300,
+                  borderRadius: 10,
+                  overflow: "hidden",
+                  background: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative"
+                }}>
+                  <ProductImage
+                    src={currentImg}
+                    alt={product.title}
+                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                  />
+
+                  {/* Share button */}
+                  <button
+                    onClick={handleShare}
+                    style={{
+                      position: "absolute", top: 8, right: 8,
+                      padding: 8, borderRadius: "50%",
+                      background: "rgba(22,52,88,0.8)",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      color: "var(--gold)", cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center"
+                    }}
                     aria-label="Share"
-                  ><Share2 className="h-4 w-4" /></button>
-                  {copied && <div className="absolute top-2 right-12 bg-black/80 text-white text-[10px] px-2 py-1 rounded">Copied!</div>}
+                  >
+                    <Share2 style={{ width: 16, height: 16 }} />
+                  </button>
+                  {copied && (
+                    <div style={{
+                      position: "absolute", top: 8, right: 48,
+                      background: "rgba(22,52,88,0.85)", color: "white",
+                      fontSize: 11, padding: "4px 8px", borderRadius: 6
+                    }}>
+                      Copied!
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Thumbnail */}
-              <div className="flex gap-2">
-                <button onClick={() => setActiveImage(product.img)}
-                  className={`w-16 h-12 border rounded p-0.5 ${currentImg === product.img ? "border-[var(--gold)]" : "border-[#163458]/20"}`}
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <button
+                  onClick={() => setActiveImage(product.img)}
+                  style={{
+                    width: 60, height: 44, borderRadius: 6, overflow: "hidden",
+                    border: `2px solid ${currentImg === product.img ? "var(--gold)" : "rgba(22,52,88,0.2)"}`,
+                    padding: 2, cursor: "pointer", background: "white"
+                  }}
                 >
-                  <img src={product.img} alt="Thumbnail" className="w-full h-full object-cover rounded" />
+                  <img src={product.img} alt="thumb" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </button>
               </div>
 
               {/* Action buttons */}
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <button onClick={() => handleCallbackClick(`Hello, I want to send an inquiry about ${product.title}.`)}
-                  className="w-full bg-[var(--gold)] hover:brightness-110 text-[var(--navy)] font-bold py-2.5 px-2 rounded-xl flex items-center justify-center gap-2 transition-all text-sm led-glow-gold"
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
+                <button
+                  onClick={() => handleCallbackClick(`Hello, I want to send an inquiry about ${product.title}.`)}
+                  className="led-glow-gold"
+                  style={{
+                    background: "var(--gold)", color: "#163458",
+                    border: "none", borderRadius: 12, padding: "10px 8px",
+                    fontWeight: 700, fontSize: 13, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    transition: "filter 0.15s"
+                  }}
                 >
-                  <Mail className="h-4 w-4" /> Send Inquiry
+                  <Mail style={{ width: 15, height: 15 }} />
+                  Send Inquiry
                 </button>
-                <button onClick={() => handleCallbackClick(`Please call me back regarding ${product.title}.`)}
-                  className="w-full bg-transparent hover:bg-[#163458]/5 text-[#163458] border border-[#163458]/30 font-bold py-2.5 px-2 rounded-xl flex items-center justify-center gap-2 transition-all text-sm"
+                <button
+                  onClick={() => handleCallbackClick(`Please call me back regarding ${product.title}.`)}
+                  style={{
+                    background: "transparent", color: "#163458",
+                    border: "1px solid rgba(22,52,88,0.3)", borderRadius: 12, padding: "10px 8px",
+                    fontWeight: 700, fontSize: 13, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    transition: "background 0.15s"
+                  }}
                 >
-                  <span className="hidden sm:inline">Request To Call Back</span>
-                  <span className="sm:hidden">Call Back</span>
+                  <Phone style={{ width: 15, height: 15 }} />
+                  Call Back
                 </button>
               </div>
             </div>
 
             {/* Right: specs */}
-            <div className="w-full lg:w-[60%] flex flex-col">
-              <h1 className="text-2xl md:text-3xl font-extrabold text-[#163458] mb-4">{product.title}</h1>
+            <div style={{ flex: "1 1 320px", minWidth: 0 }}>
+              <h1 style={{ fontSize: 28, fontWeight: 800, color: "#163458", margin: "0 0 16px 0", lineHeight: 1.2 }}>
+                {product.title}
+              </h1>
 
-              <div className="flex flex-wrap items-center gap-4 mb-4">
-                <div className="text-lg text-[#163458]/80">Price: <span className="text-[var(--gold)] font-bold">{product.price}</span></div>
-                <button onClick={() => handleCallbackClick(`Please provide a custom quote for ${product.title}.`)}
-                  className="border border-[var(--gold)]/50 text-[var(--gold)] text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-[var(--gold)]/10 transition-colors"
-                >Get a Price Quote</button>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <span style={{ fontSize: 16, color: "rgba(22,52,88,0.8)" }}>
+                  Price: <strong style={{ color: "var(--gold)" }}>{product.price}</strong>
+                </span>
+                <button
+                  onClick={() => handleCallbackClick(`Please provide a custom quote for ${product.title}.`)}
+                  style={{
+                    border: "1px solid rgba(var(--gold),0.5)", color: "var(--gold)",
+                    fontSize: 11, fontWeight: 600, padding: "6px 12px", borderRadius: 8,
+                    background: "transparent", cursor: "pointer",
+                    borderColor: "oklch(0.82 0.16 88 / 50%)"
+                  }}
+                >
+                  Get a Price Quote
+                </button>
               </div>
 
-              <div className="text-[#163458]/70 font-medium mb-6">MOQ: <span className="font-bold text-[#163458]">{moq}</span></div>
+              <div style={{ fontSize: 14, color: "rgba(22,52,88,0.7)", marginBottom: 24 }}>
+                MOQ: <strong style={{ color: "#163458" }}>{getMoq(product)}</strong>
+              </div>
 
               {/* Specs table */}
               {product.specs && Object.keys(product.specs).length > 0 && (
-                <>
-                  <div className="flex items-center gap-2 font-bold text-[#163458] border-b-2 border-[var(--gold)] pb-2 mb-4 w-max">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
+                <div style={{ marginBottom: 24 }}>
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    fontWeight: 700, color: "#163458",
+                    borderBottom: "2px solid var(--gold)",
+                    paddingBottom: 8, marginBottom: 16,
+                    width: "fit-content"
+                  }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)" }} />
                     {product.title} Specification
                   </div>
-                  <div className="border border-[#163458]/10 rounded-xl overflow-hidden mb-6">
-                    <table className="w-full text-sm text-left">
+                  <div style={{ border: "1px solid rgba(22,52,88,0.12)", borderRadius: 12, overflow: "hidden" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                       <tbody>
                         {Object.entries(product.specs).map(([key, value], idx) => (
-                          <tr key={idx} className="border-b border-[#163458]/10 last:border-0">
-                            <td className="w-2/5 bg-[#163458]/[0.03] px-4 py-3 text-[#163458]/75 border-r border-[#163458]/10 font-medium">{key}</td>
-                            <td className="w-3/5 px-4 py-3 text-[#163458]">{value as string}</td>
+                          <tr key={idx} style={{ borderBottom: idx < Object.keys(product.specs!).length - 1 ? "1px solid rgba(22,52,88,0.08)" : "none" }}>
+                            <td style={{ width: "40%", background: "rgba(22,52,88,0.03)", padding: "10px 14px", color: "rgba(22,52,88,0.75)", borderRight: "1px solid rgba(22,52,88,0.08)", fontWeight: 500 }}>{key}</td>
+                            <td style={{ padding: "10px 14px", color: "#163458" }}>{value as string}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                </>
+                </div>
               )}
 
-              {/* Trade table */}
+              {/* Trade info table */}
               {product.trade && Object.keys(product.trade).length > 0 && (
-                <>
-                  <div className="flex items-center gap-2 font-bold text-[#163458] border-b-2 border-[var(--gold)] pb-2 mb-4 w-max mt-4">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--gold)]" />
+                <div>
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    fontWeight: 700, color: "#163458",
+                    borderBottom: "2px solid var(--gold)",
+                    paddingBottom: 8, marginBottom: 16,
+                    width: "fit-content"
+                  }}>
+                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)" }} />
                     {product.title} Trade Information
                   </div>
-                  <div className="border border-[#163458]/10 rounded-xl overflow-hidden">
-                    <table className="w-full text-sm text-left">
+                  <div style={{ border: "1px solid rgba(22,52,88,0.12)", borderRadius: 12, overflow: "hidden" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                       <tbody>
                         {Object.entries(product.trade).map(([key, value], idx) => (
-                          <tr key={idx} className="border-b border-[#163458]/10 last:border-0">
-                            <td className="w-2/5 bg-[#163458]/[0.03] px-4 py-3 text-[#163458]/75 border-r border-[#163458]/10 font-medium">{key}</td>
-                            <td className="w-3/5 px-4 py-3 text-[#163458]">{value as string}</td>
+                          <tr key={idx} style={{ borderBottom: idx < Object.keys(product.trade!).length - 1 ? "1px solid rgba(22,52,88,0.08)" : "none" }}>
+                            <td style={{ width: "40%", background: "rgba(22,52,88,0.03)", padding: "10px 14px", color: "rgba(22,52,88,0.75)", borderRight: "1px solid rgba(22,52,88,0.08)", fontWeight: 500 }}>{key}</td>
+                            <td style={{ padding: "10px 14px", color: "#163458" }}>{value as string}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>
 
-          {/* About */}
-          <div className="mt-14 border-t border-[#163458]/10 pt-12">
-            <h2 className="text-xl font-bold text-[#163458] mb-6">About {product.title}</h2>
-            <div className="space-y-4 text-sm text-[#163458]/75 leading-relaxed max-w-5xl text-justify">
+          {/* ── About ── */}
+          <div style={{ marginTop: 56, borderTop: "1px solid rgba(22,52,88,0.10)", paddingTop: 40 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#163458", marginBottom: 20 }}>About {product.title}</h2>
+            <div style={{ fontSize: 14, color: "rgba(22,52,88,0.75)", lineHeight: 1.8, maxWidth: 860, textAlign: "justify" }}>
               <p>{aboutContent.intro}</p>
               {aboutContent.sections.map((s, idx) => (
-                <div key={idx} className="pt-2">
-                  <h4 className="font-bold text-[#163458] mb-1">{s.heading}</h4>
+                <div key={idx} style={{ marginTop: 16 }}>
+                  <h4 style={{ fontWeight: 700, color: "#163458", marginBottom: 6, fontSize: 14 }}>{s.heading}</h4>
                   <p>{s.text}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* FAQs */}
-          <div className="mt-12">
-            <h2 className="text-xl font-bold text-[#163458] mb-6">FAQs of {product.title}:</h2>
-            <div className="space-y-6 max-w-5xl">
+          {/* ── FAQs ── */}
+          <div style={{ marginTop: 40 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#163458", marginBottom: 20 }}>FAQs of {product.title}:</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 860 }}>
               {faqsContent.map((faq, idx) => (
-                <div key={idx} className="text-sm">
-                  <div className="font-bold text-[#163458]">Q: {faq.q}</div>
-                  <div className="text-[#163458]/70 mt-1">A: {faq.a}</div>
+                <div key={idx} style={{ fontSize: 13 }}>
+                  <div style={{ fontWeight: 700, color: "#163458" }}>Q: {faq.q}</div>
+                  <div style={{ color: "rgba(22,52,88,0.7)", marginTop: 4 }}>A: {faq.a}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Large image */}
-          <div className="mt-12 border border-[#163458]/10 rounded-2xl p-4 max-w-3xl flex justify-center bg-slate-50">
-            <img src={product.img} alt={`${product.title} detailed view`} className="max-h-[400px] object-contain" />
+          {/* ── Large product image ── */}
+          <div style={{
+            marginTop: 40,
+            border: "1px solid rgba(22,52,88,0.10)",
+            borderRadius: 20,
+            padding: 16,
+            maxWidth: 720,
+            background: "white",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 200
+          }}>
+            <ProductImage
+              src={product.img}
+              alt={`${product.title} detailed view`}
+              style={{ maxHeight: "384px", objectFit: "contain", width: "100%" }}
+            />
           </div>
 
-          {/* Lead form */}
-          <div ref={formRef} className="mt-12 border border-[#163458]/10 rounded-2xl p-5 md:p-8 max-w-3xl bg-[#163458]/5">
+          {/* ── Lead form ── */}
+          <div
+            ref={formRef}
+            style={{
+              marginTop: 40,
+              border: "1px solid rgba(22,52,88,0.10)",
+              borderRadius: 20,
+              padding: "32px 24px",
+              maxWidth: 720,
+              background: "rgba(22,52,88,0.025)"
+            }}
+          >
             {submitted ? (
-              <div className="text-center py-8 space-y-4">
-                <CheckCircle2 className="h-12 w-12 text-[var(--gold)] mx-auto" />
-                <h3 className="text-2xl font-bold text-[#163458]">Requirement Submitted</h3>
-                <p className="text-[#163458]/70 text-sm">Our sales team will contact you at {mobile} shortly.</p>
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <CheckCircle2 style={{ width: 48, height: 48, color: "var(--gold)", margin: "0 auto 16px" }} />
+                <h3 style={{ fontSize: 22, fontWeight: 700, color: "#163458", marginBottom: 8 }}>Requirement Submitted</h3>
+                <p style={{ color: "rgba(22,52,88,0.7)", fontSize: 13 }}>Our sales team will contact you at {mobile} shortly.</p>
               </div>
             ) : (
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-[#163458] text-center">Tell us about your requirement</h3>
-                <form onSubmit={handleSubmit} className="space-y-4 max-w-lg mx-auto">
-                  <div className="flex gap-4">
-                    <div className="w-1/2">
-                      <label className="text-[10px] text-[#163458]/60 font-semibold mb-1 block">Quantity</label>
+              <div>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#163458", textAlign: "center", marginBottom: 24 }}>Tell us about your requirement</h3>
+                <form onSubmit={handleSubmit} style={{ maxWidth: 480, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: 10, color: "rgba(22,52,88,0.6)", fontWeight: 600, display: "block", marginBottom: 4 }}>Quantity</label>
                       <input type="number" min="1" required value={quantity} onChange={e => setQuantity(e.target.value)}
-                        className="w-full border border-[#163458]/20 bg-white rounded-lg px-3 py-2 text-sm text-[#163458] focus:border-[var(--gold)] outline-none" />
+                        style={{ width: "100%", border: "1px solid rgba(22,52,88,0.2)", background: "white", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#163458", outline: "none", boxSizing: "border-box" }} />
                     </div>
-                    <div className="w-1/2">
-                      <label className="text-[10px] text-[#163458]/60 font-semibold mb-1 block">Unit</label>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: 10, color: "rgba(22,52,88,0.6)", fontWeight: 600, display: "block", marginBottom: 4 }}>Unit</label>
                       <select value={unit} onChange={e => setUnit(e.target.value)}
-                        className="w-full border border-[#163458]/20 bg-white rounded-lg px-3 py-2 text-sm text-[#163458] focus:border-[var(--gold)] outline-none"
-                      >
+                        style={{ width: "100%", border: "1px solid rgba(22,52,88,0.2)", background: "white", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#163458", outline: "none", boxSizing: "border-box" }}>
                         <option value="Foot">Foot</option>
                         <option value="Piece">Piece</option>
                         <option value="Sq. Ft.">Sq. Ft.</option>
                       </select>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div style={{ display: "flex", gap: 8 }}>
                     {["50","100","200","500"].map(v => (
                       <button type="button" key={v} onClick={() => setQuantity(v)}
-                        className="border border-[#163458]/20 text-[#163458]/70 text-[10px] px-2 py-1 rounded hover:border-[var(--gold)] hover:text-[var(--gold)] transition-colors"
-                      >{v}</button>
+                        style={{ border: "1px solid rgba(22,52,88,0.2)", color: "rgba(22,52,88,0.7)", fontSize: 10, padding: "4px 8px", borderRadius: 6, background: "transparent", cursor: "pointer", transition: "all 0.15s" }}>
+                        {v}
+                      </button>
                     ))}
                   </div>
-                  <textarea ref={detailTextareaRef} rows={3} value={details} onChange={e => setDetails(e.target.value)}
+                  <textarea
+                    ref={detailTextareaRef}
+                    rows={3}
+                    value={details}
+                    onChange={e => setDetails(e.target.value)}
                     placeholder="Additional details..."
-                    className="w-full border border-[#163458]/20 bg-white rounded-lg px-3 py-2 text-sm text-[#163458] focus:border-[var(--gold)] outline-none resize-none"
+                    style={{ width: "100%", border: "1px solid rgba(22,52,88,0.2)", background: "white", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#163458", outline: "none", resize: "none", boxSizing: "border-box" }}
                   />
-                  <div className="flex border border-[#163458]/20 rounded-lg overflow-hidden focus-within:border-[var(--gold)]">
-                    <div className="bg-slate-50 border-r border-[#163458]/20 px-3 flex items-center">
-                      <span className="text-xs font-semibold text-[#163458]/60">🇮🇳 +91</span>
+                  <div style={{ display: "flex", border: "1px solid rgba(22,52,88,0.2)", borderRadius: 8, overflow: "hidden" }}>
+                    <div style={{ background: "#f8f9fb", borderRight: "1px solid rgba(22,52,88,0.2)", padding: "0 12px", display: "flex", alignItems: "center" }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(22,52,88,0.6)" }}>🇮🇳 +91</span>
                     </div>
                     <input type="tel" required pattern="[0-9]{10}" value={mobile} onChange={e => setMobile(e.target.value)}
-                      placeholder="Mobile number" className="w-full px-3 py-2 text-sm bg-transparent text-[#163458] outline-none" />
+                      placeholder="Mobile number"
+                      style={{ flex: 1, padding: "8px 12px", fontSize: 13, color: "#163458", outline: "none", border: "none", background: "transparent" }} />
                   </div>
-                  <button type="submit"
-                    className="w-full bg-[var(--gold)] hover:brightness-110 text-[var(--navy)] font-bold py-2.5 rounded-xl transition-all text-sm led-glow-gold"
-                  >Submit Requirement</button>
+                  <button
+                    type="submit"
+                    className="led-glow-gold"
+                    style={{
+                      width: "100%", background: "var(--gold)", color: "#163458",
+                      border: "none", borderRadius: 12, padding: "11px 0",
+                      fontWeight: 700, fontSize: 13, cursor: "pointer",
+                      transition: "filter 0.15s"
+                    }}
+                  >
+                    Submit Requirement
+                  </button>
                 </form>
               </div>
             )}
           </div>
 
-          {/* Related products */}
+          {/* ── Related products ── */}
           {relatedProducts.length > 0 && (
-            <div className="mt-16 border-t border-[#163458]/10 pt-8">
-              <h2 className="text-lg font-bold text-[#163458] mb-6">More Products in {product.cat} Category</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div style={{ marginTop: 56, borderTop: "1px solid rgba(22,52,88,0.10)", paddingTop: 32 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: "#163458", marginBottom: 20 }}>More Products in {product.cat} Category</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 20, maxWidth: 620 }}>
                 {relatedProducts.map(related => (
-                  <div key={related.id} className="border border-[#163458]/10 rounded-2xl p-4 bg-white shadow-sm border border-[#163458]/10 hover:border-[var(--gold)]/40 transition-all flex flex-col h-full">
-                    <div className="aspect-[4/3] bg-black/20 mb-4 flex items-center justify-center overflow-hidden rounded-xl">
-                      <img src={related.img} alt={related.title} className="max-w-full max-h-full object-contain" />
+                  <div key={related.id} style={{
+                    border: "1px solid rgba(22,52,88,0.12)",
+                    borderRadius: 16, padding: 16,
+                    background: "white",
+                    boxShadow: "0 2px 8px rgba(22,52,88,0.06)",
+                    display: "flex", flexDirection: "column",
+                    transition: "border-color 0.2s"
+                  }}>
+                    {/* Related product image — fixed height, white bg */}
+                    <div style={{
+                      width: "100%", height: 180,
+                      borderRadius: 10, overflow: "hidden",
+                      background: "white",
+                      marginBottom: 12,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      border: "1px solid rgba(22,52,88,0.06)"
+                    }}>
+                      <ProductImage
+                        src={related.img}
+                        alt={related.title}
+                        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                      />
                     </div>
-                    <div className="flex-1 flex flex-col justify-between space-y-3">
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 10 }}>
                       <div>
-                        <h3 className="font-bold text-[#163458] text-sm leading-tight hover:text-[var(--gold)] transition-colors">
+                        <h3 style={{ fontWeight: 700, color: "#163458", fontSize: 13, lineHeight: 1.4, marginBottom: 6 }}>
                           <Link to="/products/$productId" params={{ productId: related.id }}>{related.title}</Link>
                         </h3>
-                        <div className="text-sm font-bold text-[var(--gold)] mt-2">Price: {related.price}</div>
-                        <div className="text-xs text-[#163458]/60 mt-1">Minimum Order Quantity: {moq}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--gold)" }}>Price: {related.price}</div>
+                        <div style={{ fontSize: 11, color: "rgba(22,52,88,0.6)", marginTop: 2 }}>MOQ: {getMoq(related)}</div>
                       </div>
-                      <Link to="/products/$productId" params={{ productId: related.id }}
-                        className="w-full border border-[var(--gold)]/40 text-[var(--gold)] hover:bg-[var(--gold)]/10 text-xs font-bold py-2 rounded-xl text-center transition-colors block"
-                      >Get a Price/Quote</Link>
+                      <Link
+                        to="/products/$productId"
+                        params={{ productId: related.id }}
+                        style={{
+                          display: "block", textAlign: "center",
+                          border: "1px solid rgba(22,52,88,0.25)", color: "#163458",
+                          fontSize: 11, fontWeight: 700, padding: "8px 0", borderRadius: 10,
+                          textDecoration: "none", transition: "all 0.15s"
+                        }}
+                      >
+                        Get a Price / Quote
+                      </Link>
                     </div>
                   </div>
                 ))}
