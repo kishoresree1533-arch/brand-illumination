@@ -73,9 +73,9 @@ foreach ($settings_raw as $row) {
 $s = array_merge([
     'site_name' => 'RM Sign Factory',
     'site_tagline' => 'Premium Signage Solutions',
-    'contact_phone' => '+91 98765 43210',
+    'contact_phone' => '+91 88072 47435 / +91 63748 63533',
     'contact_email' => 'hello@rmsignfactory.com',
-    'contact_address' => 'Chennai, Tamil Nadu, India'
+    'contact_address' => 'No: 14, Thanigai Valan st, Kailash Nagar, ECR Main Road, Puducherry - 605 008'
 ], $s);
 
 renderHeader('Site Settings');
@@ -103,7 +103,7 @@ renderHeader('Site Settings');
       <p><?= htmlspecialchars($_SESSION['admin_name']) ?></p>
       <span>Administrator</span>
     </div>
-    <a href="/brand-illumination/admin/logout.php" class="btn-logout">Logout</a>
+    <a href="<?= ADMIN_BASE ?>/logout.php" class="btn-logout">Logout</a>
   </div>
 </div>
 

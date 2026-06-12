@@ -42,7 +42,7 @@ renderHeader('Dashboard');
       <p><?= htmlspecialchars($_SESSION['admin_name']) ?></p>
       <span>Administrator</span>
     </div>
-    <a href="/brand-illumination/admin/logout.php" class="btn-logout">Logout</a>
+    <a href="<?= ADMIN_BASE ?>/logout.php" class="btn-logout">Logout</a>
   </div>
 </div>
 
@@ -79,7 +79,7 @@ renderHeader('Dashboard');
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700;">Recently Added Products</h2>
-          <a href="/brand-illumination/admin/products.php" class="btn btn-ghost btn-sm">View All</a>
+          <a href="<?= ADMIN_BASE ?>/products.php" class="btn btn-ghost btn-sm">View All</a>
         </div>
         <?php if (empty($recentProducts)): ?>
           <p style="font-size: 13px; color: var(--muted); text-align: center; padding: 20px 0;">No products added yet.</p>
@@ -115,7 +115,7 @@ renderHeader('Dashboard');
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700;">Recent Portfolio Works</h2>
-          <a href="/brand-illumination/admin/portfolio.php" class="btn btn-ghost btn-sm">View All</a>
+          <a href="<?= ADMIN_BASE ?>/portfolio.php" class="btn btn-ghost btn-sm">View All</a>
         </div>
         <?php if (empty($recentPortfolio)): ?>
           <p style="font-size: 13px; color: var(--muted); text-align: center; padding: 20px 0;">No portfolio items added yet.</p>

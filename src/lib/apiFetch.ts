@@ -1,3 +1,5 @@
+import { resolveImagePath } from "./resolveImagePath";
+
 /**
  * Wraps fetch() with automatic X-Admin-Token header injection.
  * On 401, clears localStorage and redirects to /admin login.
@@ -7,12 +9,13 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
   const headers = new Headers(options.headers as HeadersInit);
   headers.set("X-Admin-Token", token);
 
-  const response = await fetch(url, { ...options, headers });
+  const resolvedUrl = resolveImagePath(url);
+  const response = await fetch(resolvedUrl, { ...options, headers });
 
   if (response.status === 401) {
     localStorage.removeItem("admin_token");
     localStorage.removeItem("admin_name");
-    window.location.href = "/admin";
+    window.location.href = resolveImagePath("/admin");
   }
 
   return response;

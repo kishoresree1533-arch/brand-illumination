@@ -37,6 +37,7 @@ export function SpotlightCursor() {
             "radial-gradient(closest-side, oklch(0.82 0.16 88 / 0.08), oklch(0.82 0.16 88 / 0.03) 50%, transparent 70%)",
           filter: "blur(10px)",
           mixBlendMode: "screen",
+          pointerEvents: "none",
         }}
       />
     </div>

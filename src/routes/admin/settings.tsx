@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "../../components/AdminLayout";
 import { useEffect, useState } from "react";
+import { apiFetch } from "../../lib/apiFetch";
 
 export const Route = createFileRoute("/admin/settings")({
   component: SettingsPage,
@@ -25,15 +26,20 @@ function SettingsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/admin/api/settings.php")
+    apiFetch("/admin/api/settings.php")
       .then((r) => r.json())
       .then((d) => {
-        if (!d.error) {
+        if (d && !d.error) {
           setData(d);
           const map: Record<string, string> = {};
           d.forEach((s: Setting) => { map[s.setting_key] = s.setting_value ?? ""; });
           setValues(map);
+        } else if (d && d.error) {
+          setError(d.error);
         }
+      })
+      .catch((err) => {
+        setError("Failed to load settings.");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -42,7 +48,7 @@ function SettingsPage() {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch("/admin/api/settings.php", {
+      const res = await apiFetch("/admin/api/settings.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ settings: values }),

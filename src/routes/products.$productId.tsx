@@ -3,6 +3,7 @@ import { SiteShell } from "@/components/SiteShell";
 import { ArrowLeft, Mail, Phone, Share2, ChevronRight, CheckCircle2, ImageOff } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { PRODUCTS, type Product } from "@/lib/products-data";
+import { resolveImagePath } from "@/lib/resolveImagePath";
 
 export const Route = createFileRoute("/products/$productId")({
   head: ({ params }) => {
@@ -54,8 +55,9 @@ function getDynamicFaqs(product: Product) {
 // Safe image component — shows a proper fallback if the image fails
 function ProductImage({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
   const [errored, setErrored] = useState(false);
+  const resolvedSrc = resolveImagePath(src);
 
-  if (errored || !src) {
+  if (errored || !resolvedSrc) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "#f1f5f9", color: "#94a3b8", height: "100%", width: "100%", ...style }} className={className}>
         <ImageOff style={{ width: 28, height: 28 }} />
@@ -66,7 +68,7 @@ function ProductImage({ src, alt, className, style }: { src: string; alt: string
 
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       style={{ display: "block", ...style }}
@@ -78,7 +80,40 @@ function ProductImage({ src, alt, className, style }: { src: string; alt: string
 
 function ProductDetailPage() {
   const { productId } = Route.useParams();
-  const product = useMemo(() => PRODUCTS.find(p => p.id === productId) ?? null, [productId]);
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(resolveImagePath("/admin/api/products.php"))
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped = data.map((p: any) => ({
+            id: p.slug || String(p.id),
+            title: p.title,
+            cat: p.category as any,
+            img: p.image_path,
+            desc: p.description || "",
+            price: p.price || "Price on Request",
+            specs: typeof p.specs === "string" ? JSON.parse(p.specs) : p.specs,
+            trade: typeof p.trade === "string" ? JSON.parse(p.trade) : p.trade,
+            about: typeof p.about_data === "string" ? JSON.parse(p.about_data) : (p.about_data || null),
+            faqs: typeof p.faqs === "string" ? JSON.parse(p.faqs) : (p.faqs || []),
+          }));
+          setDbProducts(mapped);
+        }
+      })
+      .catch(err => console.error("Error loading products:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const staticProduct = useMemo(() => PRODUCTS.find(p => p.id === productId) ?? null, [productId]);
+
+  const product = useMemo(() => {
+    const found = dbProducts.find(p => p.id === productId);
+    if (found) return found;
+    return staticProduct;
+  }, [dbProducts, staticProduct, productId]);
 
   const [quantity, setQuantity] = useState("50");
   const [unit, setUnit] = useState("Foot");
@@ -94,6 +129,14 @@ function ProductDetailPage() {
     setActiveImage(null);
     setSubmitted(false);
   }, [productId]);
+
+  if (!product && loading) return (
+    <SiteShell>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="w-8 h-8 border-2 border-gray-300 border-t-[#c9a84c] rounded-full animate-spin"></div>
+      </div>
+    </SiteShell>
+  );
 
   if (!product) return (
     <SiteShell>
@@ -466,8 +509,9 @@ function ProductDetailPage() {
                     <div style={{ background: "#f8f9fb", borderRight: "1px solid rgba(22,52,88,0.2)", padding: "0 12px", display: "flex", alignItems: "center" }}>
                       <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(22,52,88,0.6)" }}>🇮🇳 +91</span>
                     </div>
-                    <input type="tel" required pattern="[0-9]{10}" value={mobile} onChange={e => setMobile(e.target.value)}
-                      placeholder="Mobile number"
+                    <input type="tel" required pattern="[0-9]{10}" maxLength={10} value={mobile} onChange={e => setMobile(e.target.value.replace(/\D/g, ''))}
+                      placeholder="10-digit mobile number"
+                      title="Please enter a 10-digit mobile number"
                       style={{ flex: 1, padding: "8px 12px", fontSize: 13, color: "#163458", outline: "none", border: "none", background: "transparent" }} />
                   </div>
                   <button

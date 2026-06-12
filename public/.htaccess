@@ -1,8 +1,29 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # 1. Prevent loop: if request is already internally rewritten to /index.html, do nothing
   RewriteRule ^index\.html$ - [L]
+
+  # 2. Redirect any direct browser request to PHP page files in the admin folder (e.g. index.php, dashboard.php) to the React /admin path
+  RewriteCond %{REQUEST_URI} !^/admin/api/ [NC]
+  RewriteCond %{THE_REQUEST} \s/admin/[^/]+\.php [NC]
+  RewriteRule ^admin/([^/]+)\.php$ /admin [R=301,L]
+
+  # 3. Allow direct access to physical files, folders, uploads, and the API scripts under /admin/api/
+  RewriteCond %{REQUEST_URI} ^/admin/api/ [NC]
+  RewriteRule ^ - [L]
+
+  RewriteCond %{REQUEST_URI} ^/uploads/ [NC]
+  RewriteRule ^ - [L]
+
+  # 4. Force all /admin requests to be served by the React SPA index.html, bypassing physical admin PHP files
+  RewriteCond %{REQUEST_URI} ^/admin(/.*)?$ [NC]
+  RewriteRule ^admin(/.*)?$ /index.html [L]
+
+  # 5. Fallback for all other frontend routes (e.g. /products, /portfolio, etc.)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 </IfModule>
+

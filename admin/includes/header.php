@@ -152,6 +152,6 @@ function renderFooter(): void {
 function renderNav(string $currentPage, array $nav): void {
     foreach ($nav as $item) {
         $active = $currentPage === $item['file'] ? ' active' : '';
-        echo "<a href='/brand-illumination/admin/{$item['file']}' class='$active'><span class='nav-icon'>{$item['icon']}</span>{$item['label']}</a>";
+        echo "<a href='" . ADMIN_BASE . "/{$item['file']}' class='$active'><span class='nav-icon'>{$item['icon']}</span>{$item['label']}</a>";
     }
 }

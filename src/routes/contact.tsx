@@ -67,7 +67,7 @@ function ContactPage() {
                 <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                   <Field label="Full Name"  type="text"  id="name"    placeholder="Your full name" />
                   <Field label="Email"      type="email" id="email"   placeholder="you@company.com" />
-                  <Field label="Phone"      type="tel"   id="phone"   placeholder="+91 00000 00000" />
+                  <Field label="Phone"      type="tel"   id="phone"   placeholder="+91 88072 47435" />
                   <Field label="Company"    type="text"  id="company" placeholder="Company name" />
                 </div>
                 <div className="mt-6">
@@ -99,9 +99,15 @@ function ContactPage() {
               <div className="space-y-4">
                 <ContactCard
                   icon={Phone}
-                  label="Call"
-                  value="+91 00000 00000"
-                  href="tel:+910000000000"
+                  label="Call Representative 1"
+                  value="+91 88072 47435"
+                  href="tel:+918807247435"
+                />
+                <ContactCard
+                  icon={Phone}
+                  label="Call Representative 2"
+                  value="+91 63748 63533"
+                  href="tel:+916374863533"
                 />
                 <ContactCard
                   icon={Mail}
@@ -112,28 +118,25 @@ function ContactPage() {
                 <ContactCard
                   icon={MapPin}
                   label="Studio"
-                  value="Manufacturing Unit, India"
+                  value="No: 14, Thanigai Valan st, Kailash Nagar, ECR Main Road, Puducherry - 605 008"
                 />
                 <ContactCard
                   icon={MessageCircle}
-                  label="WhatsApp"
-                  value="Chat with the studio"
-                  href="https://wa.me/910000000000"
+                  label="WhatsApp Rep 1"
+                  value="Chat with Representative 1"
+                  href="https://wa.me/918807247435"
+                />
+                <ContactCard
+                  icon={MessageCircle}
+                  label="WhatsApp Rep 2"
+                  value="Chat with Representative 2"
+                  href="https://wa.me/916374863533"
                 />
               </div>
             </Reveal>
           </div>
         </div>
       </section>
-
-      {/* ── Floating WhatsApp button ─────────────────────────────────────── */}
-      <a
-        href="https://wa.me/910000000000"
-        className="fixed bottom-6 right-6 z-40 grid h-14 w-14 place-items-center rounded-full bg-[var(--gold)] text-[var(--navy)] led-glow-gold animate-glow-pulse"
-        aria-label="WhatsApp"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </a>
 
     </SiteShell>
   );

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { resolveImagePath } from "../../lib/resolveImagePath";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminLogin,
@@ -22,7 +23,7 @@ function AdminLogin() {
     setError("");
 
     try {
-      const res = await fetch("/admin/api/login.php", {
+      const res = await fetch(resolveImagePath("/admin/api/login.php"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -33,7 +34,7 @@ function AdminLogin() {
         // Store admin session info
         localStorage.setItem("admin_token", data.token || "authenticated");
         localStorage.setItem("admin_name", data.name || "Admin");
-        window.location.href = "/admin/dashboard";
+        window.location.href = resolveImagePath("/admin/dashboard");
       } else {
         setError(data.error || "Invalid username or password.");
       }

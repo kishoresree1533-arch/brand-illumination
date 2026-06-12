@@ -4,6 +4,7 @@ import { Reveal } from "@/components/Reveal";
 import { useEffect, useMemo, useState } from "react";
 import { ZoomIn, X, Send, Info, ShieldCheck, ChevronRight, Layers, Check, ImageOff } from "lucide-react";
 import { type Cat, type Product, CATS, PRODUCTS } from "@/lib/products-data";
+import { resolveImagePath } from "@/lib/resolveImagePath";
 
 const HERO_IMG = "/products/product-3d.jpg";
 
@@ -23,7 +24,8 @@ export const Route = createFileRoute("/products/")({
 // Safe image with fallback
 function SafeImg({ src, alt, style, className }: { src: string; alt: string; style?: React.CSSProperties; className?: string }) {
   const [errored, setErrored] = useState(false);
-  if (errored || !src) {
+  const resolvedSrc = resolveImagePath(src);
+  if (errored || !resolvedSrc) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, background: "#f1f5f9", color: "#94a3b8", ...style }} className={className}>
         <ImageOff style={{ width: 28, height: 28 }} />
@@ -31,7 +33,7 @@ function SafeImg({ src, alt, style, className }: { src: string; alt: string; sty
       </div>
     );
   }
-  return <img src={src} alt={alt} style={style} className={className} onError={() => setErrored(true)} />;
+  return <img src={resolvedSrc} alt={alt} style={style} className={className} onError={() => setErrored(true)} />;
 }
 
 function ProductsPage() {
@@ -41,12 +43,46 @@ function ProductsPage() {
   const [mobile, setMobile] = useState("");
   const [details, setDetails] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(resolveImagePath("/admin/api/products.php"))
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped = data.map((p: any) => ({
+            id: p.slug || String(p.id),
+            title: p.title,
+            cat: p.category as any,
+            img: p.image_path,
+            desc: p.description || "",
+            price: p.price || "Price on Request",
+            specs: typeof p.specs === "string" ? JSON.parse(p.specs) : p.specs,
+            trade: typeof p.trade === "string" ? JSON.parse(p.trade) : p.trade,
+            about: typeof p.about_data === "string" ? JSON.parse(p.about_data) : (p.about_data || null),
+            faqs: typeof p.faqs === "string" ? JSON.parse(p.faqs) : (p.faqs || []),
+          }));
+          setDbProducts(mapped);
+        }
+      })
+      .catch(err => console.error("Error loading products:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const combinedProducts = useMemo(() => {
+    if (dbProducts.length === 0) return PRODUCTS;
+    const dbSlugs = new Set(dbProducts.map(p => p.id));
+    const uniqueStatic = PRODUCTS.filter(p => !dbSlugs.has(p.id));
+    return [...dbProducts, ...uniqueStatic];
+  }, [dbProducts]);
 
   useEffect(() => { if (search.cat) setCat(search.cat as Cat); }, [search.cat]);
 
   const filtered = useMemo(
-    () => cat === "All" ? PRODUCTS : PRODUCTS.filter(p => p.cat === cat),
-    [cat]
+    () => cat === "All" ? combinedProducts : combinedProducts.filter(p => p.cat === cat),
+    [cat, combinedProducts]
   );
 
   const handleInquirySubmit = (e: React.FormEvent) => {
@@ -300,8 +336,9 @@ function ProductsPage() {
                     <div style={{ display: "flex", gap: 10 }}>
                       <div style={{ flex: 1, display: "flex", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(22,52,88,0.2)", background: "white" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", padding: "0 12px", background: "#f8f9fb", fontSize: 12, color: "rgba(22,52,88,0.6)", fontWeight: 700, borderRight: "1px solid rgba(22,52,88,0.15)" }}>🇮🇳 +91</span>
-                        <input type="tel" required pattern="[0-9]{10}" value={mobile} onChange={e => setMobile(e.target.value)}
-                          placeholder="10-digit mobile"
+                        <input type="tel" required pattern="[0-9]{10}" maxLength={10} value={mobile} onChange={e => setMobile(e.target.value.replace(/\D/g, ''))}
+                          placeholder="10-digit mobile number"
+                          title="Please enter a 10-digit mobile number"
                           style={{ flex: 1, background: "transparent", padding: "8px 12px", fontSize: 12, color: "#163458", outline: "none", border: "none" }} />
                       </div>
                       <button type="submit" style={{ background: "var(--gold)", color: "#163458", border: "none", fontSize: 12, fontWeight: 700, padding: "10px 16px", borderRadius: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
@@ -407,8 +444,9 @@ function ProductsPage() {
                     <div style={{ display: "flex", gap: 8 }}>
                       <div style={{ flex: 1, display: "flex", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.05)" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", padding: "0 10px", fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 700, borderRight: "1px solid rgba(255,255,255,0.10)" }}>+91</span>
-                        <input type="tel" required pattern="[0-9]{10}" value={mobile} onChange={e => setMobile(e.target.value)}
-                          placeholder="Mobile number"
+                        <input type="tel" required pattern="[0-9]{10}" maxLength={10} value={mobile} onChange={e => setMobile(e.target.value.replace(/\D/g, ''))}
+                          placeholder="10-digit mobile number"
+                          title="Please enter a 10-digit mobile number"
                           style={{ flex: 1, background: "transparent", padding: "8px 10px", fontSize: 12, color: "white", outline: "none", border: "none" }} />
                       </div>
                       <button type="submit" style={{ background: "var(--gold)", color: "#163458", border: "none", fontSize: 12, fontWeight: 700, padding: "8px 14px", borderRadius: 10, cursor: "pointer" }}>

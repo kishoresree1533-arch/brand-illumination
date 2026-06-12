@@ -1,9 +1,19 @@
 <?php
 session_start();
 
+if (!defined('ADMIN_BASE')) {
+    $script = $_SERVER['SCRIPT_NAME'] ?? '';
+    $pos = strpos($script, '/admin');
+    if ($pos !== false) {
+        define('ADMIN_BASE', substr($script, 0, $pos + 6));
+    } else {
+        define('ADMIN_BASE', '/admin');
+    }
+}
+
 function requireLogin(): void {
     if (empty($_SESSION['admin_id'])) {
-        header('Location: /brand-illumination/admin/index.php');
+        header('Location: ' . ADMIN_BASE . '/index.php');
         exit;
     }
 }
@@ -19,6 +29,6 @@ function loginAdmin(int $id, string $name): void {
 
 function logoutAdmin(): void {
     session_destroy();
-    header('Location: /brand-illumination/admin/index.php');
+    header('Location: ' . ADMIN_BASE . '/index.php');
     exit;
 }

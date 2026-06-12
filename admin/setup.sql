@@ -74,6 +74,6 @@ CREATE TABLE IF NOT EXISTS site_settings (
 INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES
 ('site_name', 'RM Sign Factory'),
 ('site_tagline', 'Premium Signage Solutions'),
-('contact_phone', '+91 98765 43210'),
+('contact_phone', '+91 88072 47435 / +91 63748 63533'),
 ('contact_email', 'hello@rmsignfactory.com'),
-('contact_address', 'Chennai, Tamil Nadu, India');
+('contact_address', 'No: 14, Thanigai Valan st, Kailash Nagar, ECR Main Road, Puducherry - 605 008');

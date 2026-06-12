@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "../../components/AdminLayout";
 import { useEffect, useState, useRef } from "react";
 import { apiFetch } from "../../lib/apiFetch";
+import { resolveImagePath } from "../../lib/resolveImagePath";
 
 export const Route = createFileRoute("/admin/products")({
   component: ProductsPage,
@@ -79,6 +80,7 @@ function ProductsPage() {
 
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [faqs, setFaqs] = useState<FaqRow[]>([{ q: "", a: "" }]);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null>(null);
 
   const fetchProducts = () => {
     setLoading(true);
@@ -186,10 +188,8 @@ function ProductsPage() {
     }
   };
 
-  const handleDelete = async (id: number, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
-    await apiFetch(`/admin/api/products.php?id=${id}`, { method: "DELETE" });
-    fetchProducts();
+  const handleDelete = (id: number, title: string) => {
+    setDeleteTarget({ id, title });
   };
 
   return (
@@ -243,7 +243,7 @@ function ProductsPage() {
                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                   <td className="py-2.5 border-b border-gray-100 pr-2">
                     {p.image_path ? (
-                      <img src={`http://localhost/brand-illumination${p.image_path}`} alt={p.title} className="w-9 h-9 rounded-md object-cover bg-gray-100" />
+                      <img src={resolveImagePath(p.image_path)} alt={p.title} className="w-9 h-9 rounded-md object-cover bg-gray-100" />
                     ) : (
                       <div className="w-9 h-9 rounded-md bg-gray-100 flex items-center justify-center text-sm text-gray-300">◈</div>
                     )}
@@ -468,6 +468,48 @@ function ProductsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="bg-white border border-gray-200 rounded-2xl w-full max-w-sm shadow-2xl p-6 flex flex-col gap-4 animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-red-500 text-3xl font-light">⚠️</div>
+            <div>
+              <h3 className="font-space font-bold text-gray-900 text-base">Delete Product?</h3>
+              <p className="text-gray-500 text-xs mt-1.5 leading-relaxed">
+                Are you sure you want to delete <strong className="text-gray-800">"{deleteTarget.title}"</strong>? This will permanently remove it from the catalogue database.
+              </p>
+            </div>
+            <div className="flex gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 bg-gray-50 border border-gray-200 text-gray-600 text-[13px] font-semibold py-2.5 rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const target = deleteTarget;
+                  setDeleteTarget(null);
+                  await apiFetch(`/admin/api/products.php?id=${target.id}`, { method: "DELETE" });
+                  fetchProducts();
+                }}
+                className="flex-1 bg-red-600 text-white text-[13px] font-bold py-2.5 rounded-xl hover:bg-red-700 active:scale-95 transition-all cursor-pointer"
+              >
+                Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

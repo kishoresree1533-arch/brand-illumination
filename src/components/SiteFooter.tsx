@@ -53,11 +53,18 @@ export function SiteFooter() {
 
             <div className="space-y-2.5 text-sm">
               <a
-                href="tel:+910000000000"
+                href="tel:+918807247435"
                 className="flex items-center gap-3 text-white/80 hover:text-[var(--gold)] transition-colors"
               >
                 <Phone className="h-4 w-4 shrink-0 text-[var(--gold)]" />
-                +91 00000 00000
+                +91 88072 47435
+              </a>
+              <a
+                href="tel:+916374863533"
+                className="flex items-center gap-3 text-white/80 hover:text-[var(--gold)] transition-colors"
+              >
+                <Phone className="h-4 w-4 shrink-0 text-[var(--gold)]" />
+                +91 63748 63533
               </a>
               <a
                 href="mailto:hello@rmsignfactory.com"
@@ -68,7 +75,7 @@ export function SiteFooter() {
               </a>
               <p className="flex items-center gap-3 text-white/80">
                 <MapPin className="h-4 w-4 shrink-0 text-[var(--gold)]" />
-                Manufacturing Unit · India
+                No: 14, Thanigai Valan st, Kailash Nagar, ECR Main Road, Puducherry - 605 008
               </p>
             </div>
           </div>

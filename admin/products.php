@@ -124,7 +124,7 @@ renderHeader('Products Management');
       <p><?= htmlspecialchars($_SESSION['admin_name']) ?></p>
       <span>Administrator</span>
     </div>
-    <a href="/brand-illumination/admin/logout.php" class="btn-logout">Logout</a>
+    <a href="<?= ADMIN_BASE ?>/logout.php" class="btn-logout">Logout</a>
   </div>
 </div>
 
@@ -132,7 +132,7 @@ renderHeader('Products Management');
   <div class="topbar">
     <h1>Products Management</h1>
     <div class="topbar-right">
-      <a href="/brand-illumination/admin/products.php?add=1" class="btn btn-primary">+ Add New Product</a>
+      <a href="<?= ADMIN_BASE ?>/products.php?add=1" class="btn btn-primary">+ Add New Product</a>
     </div>
   </div>
   
@@ -242,7 +242,7 @@ renderHeader('Products Management');
 
           <div style="margin-top: 32px; display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 24px;">
             <button type="submit" name="save_product" class="btn btn-primary">Save Product</button>
-            <a href="/brand-illumination/admin/products.php" class="btn btn-ghost">Cancel</a>
+            <a href="<?= ADMIN_BASE ?>/products.php" class="btn btn-ghost">Cancel</a>
           </div>
         </form>
       </div>
@@ -303,8 +303,8 @@ renderHeader('Products Management');
                   </td>
                   <td>
                     <div style="display: flex; gap: 8px;">
-                      <a href="/brand-illumination/admin/products.php?edit=<?= $p['id'] ?>" class="btn btn-ghost btn-sm">Edit</a>
-                      <a href="/brand-illumination/admin/products.php?delete=<?= $p['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this product?')">Delete</a>
+                      <a href="<?= ADMIN_BASE ?>/products.php?edit=<?= $p['id'] ?>" class="btn btn-ghost btn-sm">Edit</a>
+                      <a href="<?= ADMIN_BASE ?>/products.php?delete=<?= $p['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this product?')">Delete</a>
                     </div>
                   </td>
                 </tr>

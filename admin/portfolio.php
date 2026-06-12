@@ -116,7 +116,7 @@ renderHeader('Portfolio Works Management');
       <p><?= htmlspecialchars($_SESSION['admin_name']) ?></p>
       <span>Administrator</span>
     </div>
-    <a href="/brand-illumination/admin/logout.php" class="btn-logout">Logout</a>
+    <a href="<?= ADMIN_BASE ?>/logout.php" class="btn-logout">Logout</a>
   </div>
 </div>
 
@@ -124,7 +124,7 @@ renderHeader('Portfolio Works Management');
   <div class="topbar">
     <h1>Portfolio Works</h1>
     <div class="topbar-right">
-      <a href="/brand-illumination/admin/portfolio.php?add=1" class="btn btn-primary">+ Add New Work</a>
+      <a href="<?= ADMIN_BASE ?>/portfolio.php?add=1" class="btn btn-primary">+ Add New Work</a>
     </div>
   </div>
   
@@ -217,7 +217,7 @@ renderHeader('Portfolio Works Management');
 
           <div style="margin-top: 32px; display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 24px;">
             <button type="submit" name="save_portfolio" class="btn btn-primary">Save Showcase</button>
-            <a href="/brand-illumination/admin/portfolio.php" class="btn btn-ghost">Cancel</a>
+            <a href="<?= ADMIN_BASE ?>/portfolio.php" class="btn btn-ghost">Cancel</a>
           </div>
         </form>
       </div>
@@ -263,8 +263,8 @@ renderHeader('Portfolio Works Management');
                   </td>
                   <td>
                     <div style="display: flex; gap: 8px;">
-                      <a href="/brand-illumination/admin/portfolio.php?edit=<?= $item['id'] ?>" class="btn btn-ghost btn-sm">Edit</a>
-                      <a href="/brand-illumination/admin/portfolio.php?delete=<?= $item['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this portfolio entry?')">Delete</a>
+                      <a href="<?= ADMIN_BASE ?>/portfolio.php?edit=<?= $item['id'] ?>" class="btn btn-ghost btn-sm">Edit</a>
+                      <a href="<?= ADMIN_BASE ?>/portfolio.php?delete=<?= $item['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this portfolio entry?')">Delete</a>
                     </div>
                   </td>
                 </tr>

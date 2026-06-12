@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "../../components/AdminLayout";
 import { useEffect, useState, useRef } from "react";
 import { apiFetch } from "../../lib/apiFetch";
+import { resolveImagePath } from "../../lib/resolveImagePath";
 
 export const Route = createFileRoute("/admin/portfolio")({
   component: PortfolioAdminPage,
@@ -45,7 +46,7 @@ function PortfolioAdminPage() {
   const [success, setSuccess] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null>(null);
   const [form, setForm] = useState({ title: "", category: "", client: "", description: "" });
 
   const fetchData = () => {
@@ -100,15 +101,13 @@ function PortfolioAdminPage() {
     finally { setSubmitting(false); }
   };
 
-  const handleDelete = async (id: number, title: string) => {
-    if (!confirm(`Delete "${title}"?`)) return;
-    await apiFetch(`/admin/api/portfolio.php?id=${id}`, { method: "DELETE" });
-    fetchData();
+  const handleDelete = (id: number, title: string) => {
+    setDeleteTarget({ id, title });
   };
 
   // Build full image URL for display
   const imgUrl = (path: string) =>
-    path ? `http://localhost/brand-illumination${path}` : "";
+    path ? resolveImagePath(path) : "";
 
   return (
     <AdminLayout title="Portfolio Management">
@@ -286,6 +285,48 @@ function PortfolioAdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="bg-white border border-gray-200 rounded-2xl w-full max-w-sm shadow-2xl p-6 flex flex-col gap-4 animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-red-500 text-3xl font-light">⚠️</div>
+            <div>
+              <h3 className="font-space font-bold text-gray-900 text-base">Delete Portfolio Item?</h3>
+              <p className="text-gray-500 text-xs mt-1.5 leading-relaxed">
+                Are you sure you want to delete <strong className="text-gray-800">"{deleteTarget.title}"</strong>? This will permanently remove it.
+              </p>
+            </div>
+            <div className="flex gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 bg-gray-50 border border-gray-200 text-gray-600 text-[13px] font-semibold py-2.5 rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const target = deleteTarget;
+                  setDeleteTarget(null);
+                  await apiFetch(`/admin/api/portfolio.php?id=${target.id}`, { method: "DELETE" });
+                  fetchData();
+                }}
+                className="flex-1 bg-red-600 text-white text-[13px] font-bold py-2.5 rounded-xl hover:bg-red-700 active:scale-95 transition-all cursor-pointer"
+              >
+                Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

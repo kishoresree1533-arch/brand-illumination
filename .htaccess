@@ -1,5 +1,27 @@
 RewriteEngine On
 
-# Redirect /admin to admin login page (index.php)
-RewriteCond %{REQUEST_URI} ^/admin/?$
-RewriteRule ^.*$ /admin/index.php [L,R=302]
+# 1. Prevent loop: if request is already internally rewritten to /index.html, do nothing
+RewriteRule ^index\.html$ - [L]
+
+# 2. Redirect any direct browser request to PHP page files in the admin folder (e.g. index.php, dashboard.php) to the React /admin path
+RewriteCond %{REQUEST_URI} !^/admin/api/ [NC]
+RewriteCond %{THE_REQUEST} \s/admin/[^/]+\.php [NC]
+RewriteRule ^admin/([^/]+)\.php$ /admin [R=301,L]
+
+# 3. Allow direct access to physical files, folders, uploads, and the API scripts under /admin/api/
+RewriteCond %{REQUEST_URI} ^/admin/api/ [NC]
+RewriteRule ^ - [L]
+
+RewriteCond %{REQUEST_URI} ^/uploads/ [NC]
+RewriteRule ^ - [L]
+
+# 4. If request is inside the /admin path and is not a physical file, serve root index.html so React Router handles it
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^admin(/.*)?$ /index.html [L]
+
+# 5. Fallback for all other frontend routes (e.g. /products, /portfolio, etc.)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^.+$ /index.html [L]
+
