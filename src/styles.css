@@ -104,7 +104,7 @@
 
   /* Text gradients */
   .text-gradient-gold {
-    background: linear-gradient(135deg, oklch(0.95 0.12 95), oklch(0.78 0.18 78));
+    background: linear-gradient(135deg, oklch(0.82 0.16 88), oklch(0.68 0.15 78));
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .text-gradient-royal {
